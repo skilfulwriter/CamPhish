@@ -48,7 +48,8 @@ Now, if you like, you can change the index.html file, for example, take a few ph
 
 Now, if you have done all the steps correctly, the program will give you a link, give that link to the victim so that you can take photos and videos from it!
 
-Photos are saved in the uploads folder! If you are in termux, use this command to transfer the photos to your gallery: cp /uploads/* /sdcard
+Photos are saved in the uploads folder! If you are in termux, use this command to transfer the photos to your gallery: 
+`cp -r uploads /sdcard`
 
 My Telegram: @MrEsfelurm
 Vip tools: https://github.com/Mr-Spect3r/My-Tools
