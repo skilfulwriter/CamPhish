@@ -1,6 +1,4 @@
-# Camera Phishing
-
-A page to take pictures from the front and back camera
+#MrEsfelurmge to take pictures from the front and back camera
 
 This program requires php, ngrok and python! 
 Please install these prerequisites before running
@@ -51,5 +49,8 @@ Now, if you have done all the steps correctly, the program will give you a link,
 Photos are saved in the uploads folder! If you are in termux, use this command to transfer the photos to your gallery: 
 `cp -r uploads /sdcard`
 
-My Telegram: @MrEsfelurm
+My Telegram: https://t.me/MrEsfelurm
+https://t.me/esfelorm
+https://t.me/TmCroc
+
 Vip tools: https://github.com/Mr-Spect3r/My-Tools
