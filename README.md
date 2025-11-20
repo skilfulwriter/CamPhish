@@ -1,5 +1,7 @@
 # Camera Phishing 
 
+A page to take pictures from the front and back camera
+
 This program requires php, ngrok and python! 
 Please install these prerequisites before running
 
